@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">CameraIDs</string>
+    <string name="action_info">Info</string>
+    <string name="info_repeat"><![CDATA[<b>(Repeat)</b> =  Focal length, aperture and AE modes match for two or more camera ids.]]>%1$s</string>
+    <string name="info_logical"><![CDATA[<b>(Logical)</b> =  The camera device is a logical camera backed by two or more physical cameras.]]>%1$s</string>
+    <string name="info_profile"><![CDATA[<b>(Profile)</b> =  Camera supports multiple Raw Sizes]]>%1$s</string>
+    <string name="github_link"><![CDATA[<a href="https://github.com/vibhorSrv/CameraIDs"><b>Check Source Code on GitHub</b></a>]]>%1$s</string>
+    <string name="line_break"><![CDATA[<br><br>]]></string>
 </resources>

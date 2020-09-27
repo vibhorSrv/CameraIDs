@@ -5,7 +5,12 @@ import android.content.Intent;
 import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -52,4 +57,28 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        return true;
+    }
+
+    public void onInfoClicked(MenuItem item) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.action_info);
+        String br = getString(R.string.line_break);
+        String html =
+                getString(R.string.info_repeat,br) +
+                getString(R.string.info_logical,br) +
+                getString(R.string.info_profile,br) +
+                getString(R.string.github_link,br);
+        builder.setMessage(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        TextView messageTextView = dialog.findViewById(android.R.id.message);
+        if (messageTextView != null) {
+            messageTextView.setLinkTextColor(getResources().getColor(R.color.colorPrimary, null));
+            messageTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        }
+    }
 }

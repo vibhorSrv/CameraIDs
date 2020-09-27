@@ -20,8 +20,8 @@ public class CamerasFinder {
     private static final String STRING_REPEAT = "(Repeat)";
     private static final String STRING_LOGICAL = "(Logical)";
     private static final String STRING_PROFILE = "(Profile)";
-    private static final String STRING_FRONT_ID = "FRONT ID [";
-    private static final String STRING_BACK_ID = "BACK ID [";
+    private static final String STRING_FRONT_ID = "FRONT ID";
+    private static final String STRING_BACK_ID = "BACK ID";
     private final Map<String, String> mPrintMap = new LinkedHashMap<>(); //stores usable data to be printed on screen
     private final Map<String, String> mCheckMap = new LinkedHashMap<>(); //used to check repeated camera properties
     private final CameraManager mCameraManager;
@@ -43,7 +43,7 @@ public class CamerasFinder {
                     boolean flashAvailable = cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
 
                     //if this string is found to be repeated camera ID is marked as "(Repeat)"
-                    String checkValue = "[Focal = " + focalLength[0] + "] [Aperture = " + aperture[0] + "] [AEMODES = " + Arrays.toString(aeModes) + "]";
+                    String checkValue = "[" + focalLength[0] + "][" + aperture[0] + "]" + Arrays.toString(aeModes);
 
                     Size[] rawSizes = getRawSizes(cameraCharacteristics);
                     String rawSizesAsString = "Not Supported";
@@ -93,9 +93,9 @@ public class CamerasFinder {
     private String getPrefix(Integer lensFacing) {
         String prefix = "ID [";
         if (lensFacing == 0)
-            prefix = STRING_FRONT_ID;
+            prefix = STRING_FRONT_ID.concat(" [");
         else if (lensFacing == 1)
-            prefix = STRING_BACK_ID;
+            prefix = STRING_BACK_ID.concat(" [");
         return prefix;
     }
 
@@ -110,7 +110,12 @@ public class CamerasFinder {
     }
 
     private String hwLevelName(int level) {
-        return level == 0 ? "LIMITED" : level == 1 ? "FULL" : level == 2 ? "LEGACY" : level == 3 ? "3" : level == 4 ? "EXTERNAL" : "";
+        return level == 0 ? "LIMITED"
+                : level == 1 ? "FULL"
+                : level == 2 ? "LEGACY"
+                : level == 3 ? "3"
+                : level == 4 ? "EXTERNAL"
+                : "";
     }
 
     /**
