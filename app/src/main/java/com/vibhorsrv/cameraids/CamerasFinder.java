@@ -7,11 +7,9 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.util.Size;
+import android.util.SizeF;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by Vibhor on 23/09/2020
@@ -61,19 +59,24 @@ public class CamerasFinder {
     }
 
     private void updateMap() {
-        TreeSet<Float> backAperturesSorted = new TreeSet<>();
-        TreeSet<Float> frontAperturesSorted = new TreeSet<>();
+//        TreeSet<Float> backAperturesSorted = new TreeSet<>();
+//        TreeSet<Float> frontAperturesSorted = new TreeSet<>();
         TreeSet<Double> frontAnglesOfViewSorted = new TreeSet<>();
         TreeSet<Double> backAnglesOfViewSorted = new TreeSet<>();
+        Comparator<SizeF> sizeFComparator = (o1, o2) -> Float.compare(o1.getWidth() * o1.getHeight(), o2.getWidth() * o2.getHeight());
+        TreeSet<SizeF> backSensorSizeSorted = new TreeSet<>(sizeFComparator);
+//        TreeSet<SizeF> frontSensorSizeSorted = new TreeSet<>(sizeFComparator);
 
-        for (Camera cam : map.values()) {
-            if (cam.isTypeNotSet())
-                if (cam.isFront()) {
-                    frontAperturesSorted.add(cam.getAperture());
-                    frontAnglesOfViewSorted.add(cam.getAngleOfView());
+        for (Camera currentCamera : map.values()) {
+            if (currentCamera.isTypeNotSet())
+                if (currentCamera.isFront()) {
+//                    frontAperturesSorted.add(currentCan.getAperture());
+                    frontAnglesOfViewSorted.add(currentCamera.getAngleOfView());
+//                    frontSensorSizeSorted.add(currentCan.getSensorSize());
                 } else {
-                    backAperturesSorted.add(cam.getAperture());
-                    backAnglesOfViewSorted.add(cam.getAngleOfView());
+//                    backAperturesSorted.add(currentCan.getAperture());
+                    backAnglesOfViewSorted.add(currentCamera.getAngleOfView());
+                    backSensorSizeSorted.add(currentCamera.getSensorSize());
                 }
         }
 
@@ -82,13 +85,13 @@ public class CamerasFinder {
 
         for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
             Camera currentCam = cameraEntry.getValue();
-            if (currentCam.isNameNotSet() && currentCam.isTypeNotSet()) {
-                if (currentCam.getAperture() == backAperturesSorted.first()) {
+            if (currentCam.isNameNotSet() && currentCam.isTypeNotSet() && currentCam.getAeModes() != null) {
+                if (currentCam.getSensorSize() == backSensorSizeSorted.last()) {
                     currentCam.setName("(Main)");
                     cameraEntry.setValue(currentCam);
                     mainBackCam = currentCam;
                 }
-                if (currentCam.getAperture() == frontAperturesSorted.first()) {
+                if (currentCam.getAngleOfView() == frontAnglesOfViewSorted.first() && currentCam.getAeModes() != null) {
                     currentCam.setName("(Main)");
                     cameraEntry.setValue(currentCam);
                     mainFrontCam = currentCam;
@@ -99,16 +102,22 @@ public class CamerasFinder {
             Camera currentCam = cameraEntry.getValue();
             if (mainBackCam != null && mainFrontCam != null) {
                 if (currentCam.isTypeNotSet() && currentCam.isNameNotSet()) {
-                    if (currentCam.getAeModes().length > 2) {
+                    if (currentCam.getAeModes() == null) {
+                        currentCam.setName("(Other)");
+                        cameraEntry.setValue(currentCam);
+                    } else if (currentCam.getAeModes().length > 2) {
                         if (!currentCam.isFront()) {
                             nameCameras(cameraEntry, mainBackCam, backAnglesOfViewSorted);
                         } else {
                             nameCameras(cameraEntry, mainFrontCam, frontAnglesOfViewSorted);
                         }
-                    } else if (currentCam.getAeModes().length <= 2) {
+                    } else if (currentCam.getAeModes().length <= 2) {//only for samsing
+                        if (currentCam.isFront() && currentCam.getSensorSize().getWidth() > mainFrontCam.getSensorSize().getWidth() && currentCam.getAngleOfView() > mainFrontCam.getAngleOfView())//special case{
+                            currentCam.setName("(Wide)");
+                    } else {
                         currentCam.setName("(Depth/Portrait)");
-                        cameraEntry.setValue(currentCam);
                     }
+                    cameraEntry.setValue(currentCam);
                 }
             }
         }
@@ -120,7 +129,7 @@ public class CamerasFinder {
             if (currentCam.getAngleOfView() == sortedListOfAngles.last()) {
                 currentCam.setName("(Wide)");
             } else {
-                currentCam.setName("(Macro)");
+                currentCam.setName("(Macro)"); //TODO improve logic
             }
             cameraEntry.setValue(currentCam);
         } else if (currentCam.getAngleOfView() < mainCam.getAngleOfView()) {

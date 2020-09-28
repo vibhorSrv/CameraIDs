@@ -2,6 +2,7 @@ package com.vibhorsrv.cameraids;
 
 import android.util.Size;
 import android.util.SizeF;
+import androidx.annotation.NonNull;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -52,6 +53,7 @@ public class Camera {
 
     public void setName(String name) {
         this.name = name;
+        setType("\u2713");
     }
 
     public String getId() {
@@ -110,6 +112,7 @@ public class Camera {
         return type.equals("");
     }
 
+    @NonNull
     public String toString() {
         return "" + type + (isFront ? "FRONT" : "BACK") + "  " + "ID" + '[' + id + "] " + name + (physicalIds.isEmpty() ? "" : " = ID" + '[' + physicalIds.toString().replace(", ", " + ") + ']') +
                 "\n\t\t\t" +
@@ -143,12 +146,13 @@ public class Camera {
                 Float.compare(camera.getFocalLength(), getFocalLength()) == 0 &&
                 Float.compare(camera.getAperture(), getAperture()) == 0 &&
                 isFlashSupported() == camera.isFlashSupported() &&
-                Arrays.equals(getAeModes(), camera.getAeModes());
+                Arrays.equals(getAeModes(), camera.getAeModes()) &&
+                getSensorSize().equals(camera.getSensorSize());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(isFront(), getFocalLength(), getAperture(), isFlashSupported());
+        int result = Objects.hash(isFront(), getFocalLength(), getAperture(), getSensorSize(), isFlashSupported());
         result = 31 * result + Arrays.hashCode(getAeModes());
         return result;
     }
