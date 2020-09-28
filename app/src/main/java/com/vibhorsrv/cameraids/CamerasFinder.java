@@ -80,53 +80,52 @@ public class CamerasFinder {
         Camera mainBackCam = map.get("0");
         Camera mainFrontCam = map.get("1");
 
-        for (String id : map.keySet()) {
-            Camera currentCam = map.get(id);
-            if (currentCam != null) {
-                if (currentCam.isNameNotSet() && currentCam.isTypeNotSet()) {
-                    if (currentCam.getAperture() == backAperturesSorted.first()) {
-                        currentCam.setName("(Main)");
-                        map.put(id, currentCam);
-                        mainBackCam = currentCam;
-                    }
-                    if (currentCam.getAperture() == frontAperturesSorted.first()) {
-                        currentCam.setName("(Main)");
-                        map.put(id, currentCam);
-                        mainFrontCam = currentCam;
-                    }
+        for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
+            Camera currentCam = cameraEntry.getValue();
+            if (currentCam.isNameNotSet() && currentCam.isTypeNotSet()) {
+                if (currentCam.getAperture() == backAperturesSorted.first()) {
+                    currentCam.setName("(Main)");
+                    cameraEntry.setValue(currentCam);
+                    mainBackCam = currentCam;
+                }
+                if (currentCam.getAperture() == frontAperturesSorted.first()) {
+                    currentCam.setName("(Main)");
+                    cameraEntry.setValue(currentCam);
+                    mainFrontCam = currentCam;
                 }
             }
         }
-        for (String id : map.keySet()) {
-            Camera currentCam = map.get(id);
-            if (currentCam != null && mainBackCam != null && mainFrontCam != null) {
+        for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
+            Camera currentCam = cameraEntry.getValue();
+            if (mainBackCam != null && mainFrontCam != null) {
                 if (currentCam.isTypeNotSet() && currentCam.isNameNotSet()) {
                     if (currentCam.getAeModes().length > 2) {
                         if (!currentCam.isFront()) {
-                            nameCameras(id, currentCam, mainBackCam, backAnglesOfViewSorted);
+                            nameCameras(cameraEntry, mainBackCam, backAnglesOfViewSorted);
                         } else {
-                            nameCameras(id, currentCam, mainFrontCam, frontAnglesOfViewSorted);
+                            nameCameras(cameraEntry, mainFrontCam, frontAnglesOfViewSorted);
                         }
                     } else if (currentCam.getAeModes().length <= 2) {
                         currentCam.setName("(Depth/Portrait)");
-                        map.put(id, currentCam);
+                        cameraEntry.setValue(currentCam);
                     }
                 }
             }
         }
     }
 
-    private void nameCameras(String id, Camera currentCam, Camera mainCam, TreeSet<Double> sortedListOfAngles) {
+    private void nameCameras(Map.Entry<String, Camera> cameraEntry, Camera mainCam, TreeSet<Double> sortedListOfAngles) {
+        Camera currentCam = cameraEntry.getValue();
         if (currentCam.getAngleOfView() > mainCam.getAngleOfView()) {
             if (currentCam.getAngleOfView() == sortedListOfAngles.last()) {
                 currentCam.setName("(Wide)");
             } else {
                 currentCam.setName("(Macro)");
             }
-            map.put(id, currentCam);
+            cameraEntry.setValue(currentCam);
         } else if (currentCam.getAngleOfView() < mainCam.getAngleOfView()) {
             currentCam.setName("(Tele)");
-            map.put(id, currentCam);
+            cameraEntry.setValue(currentCam);
         }
     }
 
