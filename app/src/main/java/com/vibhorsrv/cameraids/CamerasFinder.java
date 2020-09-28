@@ -11,19 +11,13 @@ import android.util.Size;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Vibhor on 23/09/2020
  */
 public class CamerasFinder {
-    private static final String STRING_REPEAT = "(Repeat)";
-    private static final String STRING_LOGICAL = "(Logical)";
-    private static final String STRING_PROFILE = "(Profile)";
-    private static final String STRING_FRONT_ID = "FRONT ID";
-    private static final String STRING_BACK_ID = "BACK ID";
-    private final Map<String, String> mPrintMap = new LinkedHashMap<>(); //stores usable data to be printed on screen
-    private final Map<String, String> mCheckMap = new LinkedHashMap<>(); //used to check repeated camera properties
+    private final Map<String, Camera> map = new LinkedHashMap<>();
     private final CameraManager mCameraManager;
     private String mFileName;
 
@@ -39,64 +33,110 @@ public class CamerasFinder {
                 float[] focalLength = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
                 float[] aperture = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES);
                 if (focalLength != null && aperture != null) {
-                    int[] aeModes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES);
-                    boolean flashAvailable = cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-
-                    //if this string is found to be repeated camera ID is marked as "(Repeat)"
-                    String checkValue = "[" + focalLength[0] + "][" + aperture[0] + "]" + Arrays.toString(aeModes);
-
-                    Size[] rawSizes = getRawSizes(cameraCharacteristics);
-                    String rawSizesAsString = "Not Supported";
-                    if (rawSizes != null)
-                        rawSizesAsString = Arrays.deepToString(rawSizes).replace(", ", " ");
-
-                    String hwSupportLevel = getSupportedHWlevel(cameraCharacteristics);
-
-                    String printValue = "\n\t\t\t" +
-                            "[FocalLength = " + focalLength[0] + "] " + "[Aperture = " + aperture[0] + "]" +
-                            "\n\t\t\t" +
-                            "[AeModes = " + Arrays.toString(aeModes).replace(", ", ",") + "]" +
-                            "\n\t\t\t" +
-                            "[FlashAvailable = " + flashAvailable + "]" +
-                            "\n\t\t\t" +
-                            "[RAW_SENSOR sizes: " + rawSizesAsString + "]" +
-                            "\n\t\t\t" +
-                            "[INFO_SUPPORTED_HARDWARE_LEVEL: " + hwSupportLevel + "]" +
-                            "\n";
-
-                    String prefix = getPrefix(cameraCharacteristics.get(CameraCharacteristics.LENS_FACING));
-                    String prefix2 = "";
-
-                    Set<String> physicalIDsSet = cameraCharacteristics.getPhysicalCameraIds();
-                    if (!physicalIDsSet.isEmpty()) {
-                        prefix = STRING_LOGICAL.concat(prefix); //if physical IDs are attached with a camera ID, it is marked as (Logical)
-                        prefix2 = " == ID".concat(physicalIDsSet.toString().replace(", ", " + "));
-                    } else {
-                        if (mCheckMap.containsValue(checkValue)) {
-                            prefix = STRING_REPEAT.concat(prefix);
-                        }
-                        if (rawSizes != null)
-                            if (rawSizes.length > 1)
-                                prefix = STRING_PROFILE.concat(prefix); //if more than one raw sizes are found, camera ID is marked as (Profile)
+                    Integer facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+                    Camera camera = new Camera(
+                            String.valueOf(id),
+                            facing == 0,
+                            focalLength[0],
+                            aperture[0],
+                            cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE),
+                            calculateAngleOfView(cameraCharacteristics),
+                            cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES),
+                            cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE),
+                            getRawSizes(cameraCharacteristics),
+                            getSupportedHWlevel(cameraCharacteristics),
+                            cameraCharacteristics.getPhysicalCameraIds()
+                    );
+                    if (camera.isTypeNotSet() && map.containsValue(camera)) {
+                        camera.setType("(Repeat)");
                     }
-                    mCheckMap.put(String.valueOf(id), checkValue);
-                    mPrintMap.put(prefix + id + "] " + prefix2, printValue);
+                    map.put(String.valueOf(id), camera);
                 }
-
             } catch (IllegalArgumentException ignored) {
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        updateMap();
     }
 
-    private String getPrefix(Integer lensFacing) {
-        String prefix = "ID [";
-        if (lensFacing == 0)
-            prefix = STRING_FRONT_ID.concat(" [");
-        else if (lensFacing == 1)
-            prefix = STRING_BACK_ID.concat(" [");
-        return prefix;
+    private void updateMap() {
+        TreeSet<Float> backAperturesSorted = new TreeSet<>();
+        TreeSet<Float> frontAperturesSorted = new TreeSet<>();
+        TreeSet<Double> frontAnglesOfViewSorted = new TreeSet<>();
+        TreeSet<Double> backAnglesOfViewSorted = new TreeSet<>();
+
+        for (Camera cam : map.values()) {
+            if (cam.isTypeNotSet())
+                if (cam.isFront()) {
+                    frontAperturesSorted.add(cam.getAperture());
+                    frontAnglesOfViewSorted.add(cam.getAngleOfView());
+                } else {
+                    backAperturesSorted.add(cam.getAperture());
+                    backAnglesOfViewSorted.add(cam.getAngleOfView());
+                }
+        }
+
+        Camera mainBackCam = map.get("0");
+        Camera mainFrontCam = map.get("1");
+
+        for (String id : map.keySet()) {
+            Camera currentCam = map.get(id);
+            if (currentCam != null) {
+                if (currentCam.isNameNotSet() && currentCam.isTypeNotSet()) {
+                    if (currentCam.getAperture() == backAperturesSorted.first()) {
+                        currentCam.setName("(Main)");
+                        map.put(id, currentCam);
+                        mainBackCam = currentCam;
+                    }
+                    if (currentCam.getAperture() == frontAperturesSorted.first()) {
+                        currentCam.setName("(Main)");
+                        map.put(id, currentCam);
+                        mainFrontCam = currentCam;
+                    }
+                }
+            }
+        }
+        for (String id : map.keySet()) {
+            Camera currentCam = map.get(id);
+            if (currentCam != null && mainBackCam != null && mainFrontCam != null) {
+                if (currentCam.isTypeNotSet() && currentCam.isNameNotSet()) {
+                    if (currentCam.getAeModes().length > 2) {
+                        if (!currentCam.isFront()) {
+                            nameCameras(id, currentCam, mainBackCam, backAnglesOfViewSorted);
+                        } else {
+                            nameCameras(id, currentCam, mainFrontCam, frontAnglesOfViewSorted);
+                        }
+                    } else if (currentCam.getAeModes().length <= 2) {
+                        currentCam.setName("(Depth/Portrait)");
+                        map.put(id, currentCam);
+                    }
+                }
+            }
+        }
+    }
+
+    private void nameCameras(String id, Camera currentCam, Camera mainCam, TreeSet<Double> sortedListOfAngles) {
+        if (currentCam.getAngleOfView() > mainCam.getAngleOfView()) {
+            if (currentCam.getAngleOfView() == sortedListOfAngles.last()) {
+                currentCam.setName("(Wide)");
+            } else {
+                currentCam.setName("(Macro)");
+            }
+            map.put(id, currentCam);
+        } else if (currentCam.getAngleOfView() < mainCam.getAngleOfView()) {
+            currentCam.setName("(Tele)");
+            map.put(id, currentCam);
+        }
+    }
+
+
+    private Double calculateAngleOfView(CameraCharacteristics cc) {
+        float focalLength = cc.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)[0];
+        double sensorDiagonal = Math.sqrt(Math.pow(cc.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE).getWidth(), 2)
+                + Math.pow(cc.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE).getHeight(), 2)
+        );
+        return Math.toDegrees(2 * Math.atan(sensorDiagonal / (2 * focalLength)));
     }
 
     private Size[] getRawSizes(CameraCharacteristics cameraCharacteristics) {
@@ -148,9 +188,10 @@ public class CamerasFinder {
             sb.append("\nCamera IDs visible to Apps = ");
             sb.append(Arrays.toString(mCameraManager.getCameraIdList()));
             sb.append("\n\n===============\n");
-            sb.append("All Cameras IDs = ").append(mCheckMap.keySet()).append("\n");
+            sb.append("All Cameras IDs = ").append(map.keySet()).append("\n");
             sb.append("\n");
-            sb.append(mPrintMap.toString().replace("{", "").replace("}", "").replace(", ", "\n"));
+            for (Camera camera : map.values())
+                sb.append(camera);
             sb.append("===============\n");
 
         } catch (CameraAccessException e) {

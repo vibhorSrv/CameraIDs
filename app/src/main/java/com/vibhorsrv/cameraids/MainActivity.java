@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         String html =
                 getString(R.string.info_repeat,br) +
                 getString(R.string.info_logical,br) +
-                getString(R.string.info_profile,br) +
+//                getString(R.string.info_profile,br) +
                 getString(R.string.github_link,br);
         builder.setMessage(Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT));
         AlertDialog dialog = builder.create();
