@@ -67,6 +67,7 @@ public class CamerasFinder {
         TreeSet<SizeF> backSensorSizeSorted = new TreeSet<>(sizeFComparator);
 //        TreeSet<SizeF> frontSensorSizeSorted = new TreeSet<>(sizeFComparator);
 
+        //Filling tree sets for later use/comparisons
         for (Camera currentCamera : map.values()) {
             if (currentCamera.isTypeNotSet())
                 if (currentCamera.isFront()) {
@@ -80,9 +81,11 @@ public class CamerasFinder {
                 }
         }
 
+        //Stores the Value of Main Back and Main Front (initialise with ID 0 and 1 respectively)
         Camera mainBackCam = map.get("0");
         Camera mainFrontCam = map.get("1");
 
+        //Finding Main Back and Main Front camera and updating the map
         for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
             Camera currentCam = cameraEntry.getValue();
             if (currentCam.isNameNotSet() && currentCam.isTypeNotSet() && currentCam.getAeModes() != null) {
@@ -98,12 +101,14 @@ public class CamerasFinder {
                 }
             }
         }
+
+        //Naming the Cameras
         for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
             Camera currentCam = cameraEntry.getValue();
             if (mainBackCam != null && mainFrontCam != null) {
                 if (currentCam.isTypeNotSet() && currentCam.isNameNotSet()) {
                     if (currentCam.getAeModes() == null) {
-                        currentCam.setName("(Other)");
+                        currentCam.setName("(Other)"); //Sensors such as ToF sensors
                         cameraEntry.setValue(currentCam);
                     } else if (currentCam.getAeModes().length > 2) {
                         if (!currentCam.isFront()) {
@@ -111,29 +116,31 @@ public class CamerasFinder {
                         } else {
                             nameCameras(cameraEntry, mainFrontCam, frontAnglesOfViewSorted);
                         }
-                    } else if (currentCam.getAeModes().length <= 2) {//only for samsing
-                        if (currentCam.isFront() && currentCam.getSensorSize().getWidth() > mainFrontCam.getSensorSize().getWidth() && currentCam.getAngleOfView() > mainFrontCam.getAngleOfView())//special case{
-                            currentCam.setName("(Wide)");
-                    } else {
-                        currentCam.setName("(Depth/Portrait)");
+                    } else if (currentCam.getAeModes().length <= 2) {
+                        if (currentCam.isFront() && currentCam.getSensorSize().getWidth() > mainFrontCam.getSensorSize().getWidth() && currentCam.getAngleOfView() > mainFrontCam.getAngleOfView()) {
+                            currentCam.setName("(Wide)"); //Added this logic keeping in mind Samsung S20
+                        } else {
+                            currentCam.setName("(Depth/Portrait)");
+                        }
+                        cameraEntry.setValue(currentCam);
                     }
-                    cameraEntry.setValue(currentCam);
                 }
             }
         }
     }
 
+    //Set Names for Wide/Macro/Tele cameras
     private void nameCameras(Map.Entry<String, Camera> cameraEntry, Camera mainCam, TreeSet<Double> sortedListOfAngles) {
         Camera currentCam = cameraEntry.getValue();
         if (currentCam.getAngleOfView() > mainCam.getAngleOfView()) {
-            if (currentCam.getAngleOfView() == sortedListOfAngles.last()) {
+            if (currentCam.getAngleOfView() == sortedListOfAngles.last()) { //largest angle of view
                 currentCam.setName("(Wide)");
             } else {
                 currentCam.setName("(Macro)"); //TODO improve logic
             }
             cameraEntry.setValue(currentCam);
         } else if (currentCam.getAngleOfView() < mainCam.getAngleOfView()) {
-            currentCam.setName("(Tele)");
+            currentCam.setName("(Tele)"); //angle of view less than Main Camera
             cameraEntry.setValue(currentCam);
         }
     }
