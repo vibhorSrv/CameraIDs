@@ -63,21 +63,21 @@ public class CamerasFinder {
 //        TreeSet<Float> frontAperturesSorted = new TreeSet<>();
         TreeSet<Double> frontAnglesOfViewSorted = new TreeSet<>();
         TreeSet<Double> backAnglesOfViewSorted = new TreeSet<>();
-        Comparator<SizeF> sizeFComparator = (o1, o2) -> Float.compare(o1.getWidth() * o1.getHeight(), o2.getWidth() * o2.getHeight());
-        TreeSet<SizeF> backSensorSizeSorted = new TreeSet<>(sizeFComparator);
+//        Comparator<SizeF> sizeFComparator = (o1, o2) -> Float.compare(o1.getWidth() * o1.getHeight(), o2.getWidth() * o2.getHeight());
+//        TreeSet<SizeF> backSensorSizeSorted = new TreeSet<>(sizeFComparator);
 //        TreeSet<SizeF> frontSensorSizeSorted = new TreeSet<>(sizeFComparator);
 
         //Filling tree sets for later use/comparisons
         for (Camera currentCamera : map.values()) {
             if (currentCamera.isTypeNotSet())
                 if (currentCamera.isFront()) {
-//                    frontAperturesSorted.add(currentCan.getAperture());
                     frontAnglesOfViewSorted.add(currentCamera.getAngleOfView());
-//                    frontSensorSizeSorted.add(currentCan.getSensorSize());
+//                    frontAperturesSorted.add(currentCamera.getAperture());
+//                    frontSensorSizeSorted.add(currentCamera.getSensorSize());
                 } else {
-//                    backAperturesSorted.add(currentCan.getAperture());
                     backAnglesOfViewSorted.add(currentCamera.getAngleOfView());
-                    backSensorSizeSorted.add(currentCamera.getSensorSize());
+//                    backAperturesSorted.add(currentCamera.getAperture());
+//                    backSensorSizeSorted.add(currentCamera.getSensorSize());
                 }
         }
 
@@ -85,19 +85,27 @@ public class CamerasFinder {
         Camera mainBackCam = map.get("0");
         Camera mainFrontCam = map.get("1");
 
-        //Finding Main Back and Main Front camera and updating the map
+        //Finding Main Back camera and updating the map
         for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
             Camera currentCam = cameraEntry.getValue();
             if (currentCam.isNameNotSet() && currentCam.isTypeNotSet() && currentCam.getAeModes() != null) {
-                if (currentCam.getSensorSize() == backSensorSizeSorted.last()) {
+                if (!currentCam.isFront()) {
                     currentCam.setName("(Main)");
                     cameraEntry.setValue(currentCam);
                     mainBackCam = currentCam;
+                    break;
                 }
-                if (currentCam.getAngleOfView() == frontAnglesOfViewSorted.first() && currentCam.getAeModes() != null) {
+            }
+        }
+        //Finding Main Front camera and updating the map
+        for (Map.Entry<String, Camera> cameraEntry : map.entrySet()) {
+            Camera currentCam = cameraEntry.getValue();
+            if (currentCam.isNameNotSet() && currentCam.isTypeNotSet() && currentCam.getAeModes() != null) {
+                if (currentCam.isFront()) {
                     currentCam.setName("(Main)");
                     cameraEntry.setValue(currentCam);
                     mainFrontCam = currentCam;
+                    break;
                 }
             }
         }

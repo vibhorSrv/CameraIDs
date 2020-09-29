@@ -114,7 +114,7 @@ public class Camera {
 
     @NonNull
     public String toString() {
-        return "" + type + (isFront ? "FRONT" : "BACK") + "  " + "ID" + '[' + id + "] " + name + (physicalIds.isEmpty() ? "" : " = ID" + '[' + physicalIds.toString().replace(", ", " + ") + ']') +
+        return "" + type + (isFront ? "FRONT" : "BACK") + "  " + "ID" + '[' + id + "] " + name + (physicalIds.isEmpty() ? "" : " = ID" + physicalIds.toString().replace(", ", " + ")) +
                 "\n\t\t\t" +
                 "FocalLength = " + focalLength +
                 "\n\t\t\t" +
@@ -122,7 +122,7 @@ public class Camera {
                 "\n\t\t\t" +
                 "SensorSize = " + sensorSize +
                 "\n\t\t\t" +
-                "AngleOfView(Diagonal) = " + String.format(Locale.ROOT, "%.0f", angleOfView) + "\u00b0" +
+                "AngleOfView(Diagonal) = " + Math.round(angleOfView) + "\u00b0" +
                 "\n\t\t\t" +
                 "AEModes = " + Arrays.toString(aeModes) +
                 "\n\t\t\t" +
