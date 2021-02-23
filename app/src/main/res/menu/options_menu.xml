@@ -5,10 +5,19 @@
       tools:context=".MainActivity">
     <item
             android:id="@+id/action_info"
-            android:orderInCategory="1"
+            android:orderInCategory="2"
             android:title="@string/action_info"
             android:icon="@drawable/ic_baseline_info_24"
-            app:showAsAction="always"
+            app:showAsAction="never"
             android:onClick="onInfoClicked"
+            />
+    <item
+            android:id="@+id/action_camera_dump"
+            android:orderInCategory="1"
+            android:visible="false"
+            android:title="@string/camera_dump"
+            android:icon="@drawable/ic_baseline_info_24"
+            app:showAsAction="never"
+            android:onClick="onCameraDumpClicked"
             />
 </menu>

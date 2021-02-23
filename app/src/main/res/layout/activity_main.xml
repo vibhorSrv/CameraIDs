@@ -18,6 +18,7 @@
                 android:id="@+id/textView"
                 android:layout_marginTop="15dp"
                 android:textSize="15sp"
+                android:textIsSelectable="true"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:layout_gravity="fill"
@@ -26,6 +27,14 @@
                 tools:text="TextView"
                 />
     </ScrollView>
+    <androidx.core.widget.ContentLoadingProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/progress_circular"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:indeterminate="true"
+            />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/share"

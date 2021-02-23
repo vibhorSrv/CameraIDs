@@ -1,2 +1,3 @@
+include ':checkroot'
 include ':app'
 rootProject.name = "CameraIDs"
