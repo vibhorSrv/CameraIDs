@@ -1,6 +1,6 @@
-package com.vibhorsrv.cameraids.model;
+package com.vibhorsrv.cameraids.model
 
-public enum CameraType {
+enum class CameraType {
     MAIN,
     ULTRAWIDE,
     TELE,
