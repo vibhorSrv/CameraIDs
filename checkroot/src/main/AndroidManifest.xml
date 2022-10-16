@@ -1,5 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.vibhorsrv.cameraids.checkroot">
-
-    /
-</manifest>
+<manifest package="com.vibhorsrv.cameraids.checkroot"></manifest>
