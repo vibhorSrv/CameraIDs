@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    compileSdkVersion 33
+    buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "com.vibhorsrv.cameraids"
         minSdkVersion 26
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 12
         versionName "1.2"
     }
@@ -26,7 +27,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation project(':checkroot')
+    implementation 'androidx.core:core-ktx:1.9.0'
 }
