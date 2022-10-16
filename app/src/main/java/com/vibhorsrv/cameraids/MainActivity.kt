@@ -84,7 +84,9 @@ class MainActivity : AppCompatActivity() {
                 textUtil.addBasicInfo(it)
                 cameraFinder.cameraModels.forEach(Consumer { cameraModel: CameraModel ->
                     it
+                        .append("\n")
                         .append(cameraModel)
+                        .append("\n")
                         .append("\n============================\n")
                 })
                 bufferText = it.toString()
